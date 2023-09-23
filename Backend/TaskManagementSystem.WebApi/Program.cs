@@ -1,3 +1,5 @@
+using TaskManagementSystem.DataAccess;
+
 namespace TaskManagementSystem.WebApi
 {
     public class Program
@@ -5,10 +7,26 @@ namespace TaskManagementSystem.WebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var services = builder.Services;
+            var configuration = builder.Configuration;
+
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+
+            services.AddDataAccessLayer();
+
             var app = builder.Build();
 
-            app.MapGet("/", () => "Hello World!");
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
+            app.UseHttpsRedirection();
+            app.UseRouting();
+            app.MapControllers();
             app.Run();
         }
     }
