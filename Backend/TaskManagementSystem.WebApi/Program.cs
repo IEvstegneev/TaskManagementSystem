@@ -14,7 +14,7 @@ namespace TaskManagementSystem.WebApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            services.AddDataAccessLayer();
+            services.AddDataAccessLayer(configuration);
 
             var app = builder.Build();
 
