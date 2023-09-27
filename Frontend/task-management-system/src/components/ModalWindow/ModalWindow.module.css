@@ -1,0 +1,30 @@
+.modalWindow {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    display: none;
+}
+
+.modalWindow.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modalWindowContent {
+    position: relative;
+    padding: 2em;
+    background: white;
+    min-width: 250px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px gray;
+}
+
+.modalWindowContent > button {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

@@ -1,0 +1,53 @@
+.tree-view {
+    display: flex;
+    flex-direction: column;
+    flex: content;
+    overflow: auto;
+}
+
+.tree-view > ul {
+    display: flexbox;
+    list-style-type: none;
+    background-color: aquamarine;
+    margin: 0;
+    padding: 0;
+}
+
+.tree-group {
+    display: flexbox;
+    list-style-type: none;
+    background-color: aliceblue;
+    border-left: 1px solid black;
+    margin: 0 0 0 1em;
+    padding: 0;
+}
+
+.tree-item {
+    display: flex;
+    text-align: left;
+    height: 2em;
+    text-wrap: nowrap;
+}
+
+.expander {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 2em;
+    height: 100%;
+}
+
+.expander button {
+    width: 25px;
+    height: 25px;
+    border: none;
+}
+
+.tree-item-title {
+    display: inline-flex;
+    justify-content: left;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+}
