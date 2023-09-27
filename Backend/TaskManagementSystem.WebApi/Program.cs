@@ -1,4 +1,6 @@
 using TaskManagementSystem.DataAccess;
+using AutoMapper;
+using System.Reflection;
 
 namespace TaskManagementSystem.WebApi
 {
@@ -13,8 +15,15 @@ namespace TaskManagementSystem.WebApi
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-
             services.AddDataAccessLayer(configuration);
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddCors(x => x.AddPolicy("Frontend",
+                x =>
+                {
+                    x.WithOrigins("http://localhost:3000");
+                    x.AllowAnyMethod();
+                    x.AllowAnyHeader();
+                }));
 
             var app = builder.Build();
 
@@ -24,6 +33,7 @@ namespace TaskManagementSystem.WebApi
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("Frontend");
             app.UseHttpsRedirection();
             app.UseRouting();
             app.MapControllers();

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 using TaskManagementSystem.Core;
 using TaskManagementSystem.DataAccess;
 using TaskManagementSystem.WebApi.Dto;
@@ -7,14 +9,18 @@ namespace TaskManagementSystem.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     public class IssuesController : ControllerBase
     {
         private readonly ILogger<IssuesController> _logger;
+        private readonly IMapper _mapper;
         private readonly IssuesTree _tree;
 
-        public IssuesController(ILogger<IssuesController> logger, IssuesTree tree)
+        public IssuesController(ILogger<IssuesController> logger, IMapper mapper, IssuesTree tree)
         {
             _logger = logger;
+            _mapper = mapper;
             _tree = tree;
         }
 
@@ -24,10 +30,11 @@ namespace TaskManagementSystem.WebApi.Controllers
         /// <param name="parentId">Parent issue id.</param>
         /// <response code="200">If successed.</response>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IssueNode>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IssueNodeShortDto>))]
         public async Task<IActionResult> GetRootIssuesAsync([FromQuery] Guid? parentId)
         {
-            var response = await _tree.GetRootNodesAsync();
+            var nodes = await _tree.GetRootNodesAsync();
+            var response = _mapper.Map<IssueNodeShortDto[]>(nodes);
             return Ok(response);
         }
 
@@ -60,7 +67,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
         public async Task<IActionResult> CreateIssueAsync([FromBody] CreateIssueRequest request)
         {
-            var node = new IssueNode(request.Name, !request.ParentId.HasValue);
+            var node = new IssueNode(request.Title, !request.ParentId.HasValue);
             var response = await _tree.CreateNodeAsync(node, request.ParentId);
             return CreatedAtRoute(new { Id = response }, response);
         }

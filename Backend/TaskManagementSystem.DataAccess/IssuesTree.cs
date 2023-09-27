@@ -47,12 +47,16 @@ namespace TaskManagementSystem.DataAccess
 
         public async Task<Guid> CreateNodeAsync(IssueNode node, Guid? parentId = null)
         {
-            if (parentId.HasValue && await _context.IssueNodes.FindAsync(parentId) != null)
+            if (parentId.HasValue)
             {
-                await MakeLinksAsync(node.Id, parentId.Value);
+                if (await _context.IssueNodes.FindAsync(parentId) is IssueNode parent)
+                {
+                    parent.IsLeaf = false;
+                    await MakeLinksAsync(node.Id, parentId.Value);
+                }
+                else
+                    throw new ArgumentException(); // not found
             }
-            else
-                throw new ArgumentException(); // not found
 
             _context.IssueLinks.Add(new IssueLink(node.Id, node.Id, 0));
             _context.IssueNodes.Add(node);

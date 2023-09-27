@@ -13,6 +13,7 @@
         //public DateTime FinishedAt { get; private set; }
 
         public bool IsRoot { get; set; }
+        public bool IsLeaf { get; set; }
         public ICollection<IssueLink> Descendants { get; private set; } = new List<IssueLink>();
         public ICollection<IssueLink> Ancestors { get; private set; } = new List<IssueLink>();
 
@@ -20,6 +21,7 @@
         {
             Title = title;
             IsRoot = isRoot;
+            IsLeaf = true;
         }
         public IssueNode(string title)
         {
