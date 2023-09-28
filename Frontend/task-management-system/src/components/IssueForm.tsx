@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import IssuesService from "../Api/IssuesService";
 import { useFetching } from "../hooks/useFetching";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { selectCurrentIssueId, setId } from "../store/slices/issueSlice";
 
-function IssueForm() {
-    const [id, setItems] = useState<string>();
+function IssueForm({setVisible}: {setVisible: Dispatch<SetStateAction<boolean>>}) {
+    const dispatch = useAppDispatch();
     const [title, setTitle] = useState("title");
     const [addNewIssue, isLoading, error] = useFetching(async () => {
         const id = await IssuesService.postIssue({ title });
-        setItems(id);
+        setVisible(false);
+        dispatch(setId(id));
     });
 
     return (
-        <div className="container">
+        <div className="container" >
             <div className="mb-3">
                 <label className="form-label">
                     Issue title

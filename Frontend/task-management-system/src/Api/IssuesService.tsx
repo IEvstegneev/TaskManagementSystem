@@ -10,10 +10,10 @@ export default class IssuesService {
         );
         return data;
     }
-    
+
     static async getIssuesChildrenList(parentId: string) {
         const { data } = await axios.get<ITreeItem[]>(
-            `https://localhost:7081/issues/${parentId}/descendants`,
+            `https://localhost:7081/issues/${parentId}/children`,
             {
                 headers: {
                     Accept: "application/json",
@@ -46,5 +46,20 @@ export default class IssuesService {
             }
         );
         return data;
+    }
+
+    static async moveIssue(fromId: string, toId: string) {
+        const { status } = await axios.get(
+            `https://localhost:7081/issues/${fromId}/move`,
+            {
+                params: {
+                    to: toId,
+                },
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+        return status === 204;
     }
 }

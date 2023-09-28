@@ -1,10 +1,12 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import currentIssueReducer from "./slices/issueSlice";
 import counterReducer from "./slices/counterSlice";
+import movingReducer from "./slices/movingSlice";
 
 const rootReducer = combineReducers({
     counterReducer,
     currentIssueReducer,
+    movingReducer
 });
 
 export const store = configureStore({

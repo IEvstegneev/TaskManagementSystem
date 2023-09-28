@@ -1,0 +1,56 @@
+.issueView {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    text-align: left;
+}
+
+span.date {
+    display: block;
+    text-align: right;
+}
+
+.issueView label {
+    font-size: small;
+    color: gray;
+    width: 100%;
+}
+
+.issueView input.title {
+    display: block;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: x-large;
+    border-radius: 0;
+    border-bottom: 1px solid black;
+}
+
+.issueView input.performers {
+    display: block;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: medium;
+    color: black;
+}
+
+.issueView textarea.description {
+    color: black;
+    background-color: beige;
+    border-radius: 5px;
+    padding: 5px;
+
+}
+
+.issueBtnContainer {
+    padding: 0;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#childIssueList {
+    margin-top: 10px;
+}

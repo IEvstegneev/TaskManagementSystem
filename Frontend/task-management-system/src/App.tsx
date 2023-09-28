@@ -13,7 +13,7 @@ function App() {
     return (
         <div className="App">
             <ModalWindow visible={modal} setVisible={setModal}>
-                <IssueForm />
+                <IssueForm  setVisible={setModal}/>
             </ModalWindow>
             <header>
                 <div className="header-left-section">
