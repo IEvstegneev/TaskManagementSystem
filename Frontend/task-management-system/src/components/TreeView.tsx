@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TreeItem } from "./TreeItem";
 import { ITreeItem } from "../interfaces/ITreeItem";
-import "../styles/Tree.css";
+import "../styles/TreeView.css";
 import IssuesService from "../Api/IssuesService";
 import { useFetching } from "../hooks/useFetching";
 

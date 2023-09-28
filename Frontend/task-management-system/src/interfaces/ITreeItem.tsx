@@ -1,5 +1,5 @@
 export interface ITreeItem {
-    id: number;
+    id: string;
     title: string;
     isLeaf: boolean;
 }

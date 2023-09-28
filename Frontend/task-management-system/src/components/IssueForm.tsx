@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-import "../styles/Tree.css";
+import React, { useState } from "react";
 import IssuesService from "../Api/IssuesService";
-import { ICreateIssueRequest } from "../interfaces/ICreateIssueRequest";
 import { useFetching } from "../hooks/useFetching";
 
 function IssueForm() {
