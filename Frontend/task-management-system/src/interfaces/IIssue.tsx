@@ -1,11 +1,11 @@
 import { ITreeItem } from "./ITreeItem";
 
 export interface IIssue {
-    id: number;
+    id: string;
     title: string;
     description: string;
     performers: string;
-    createAt: string;
+    createAt?: string;
 
-    children: ITreeItem[];
+    children?: ITreeItem[];
 }

@@ -17,20 +17,19 @@ export const movingSlice = createSlice({
             state.ids = [];
         },
         register: (state, action: PayloadAction<string>) => {
+            console.log("from register");
             state.ids = [...state.ids, action.payload];
         },
         unRegister: (state, action: PayloadAction<string>) => {
-            state.ids = state.ids.filter(function(value, index, arr){ 
+            state.ids = state.ids.filter(function (value, index, arr) {
                 return value != action.payload;
             });
         },
     },
 });
 
-// Сгенерированные Создатели Действий/ action creators
 export const { register, unRegister } = movingSlice.actions;
 
-// Весь остальной код может использовать тип `RootState`
 export const movingIssuesId = (state: RootState) => state.movingReducer.ids;
 
 export default movingSlice.reducer;

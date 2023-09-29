@@ -1,0 +1,42 @@
+.issueForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: left;
+}
+
+.issueForm label {
+    font-size: small;
+    color: gray;
+    width: 100%;
+}
+
+.issueForm input::placeholder {
+    font-style: italic;
+}
+
+.issueForm input.title {
+    display: block;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: x-large;
+    border-radius: 0;
+    border-bottom: 1px solid black;
+}
+
+.issueForm input.performers {
+    display: block;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: medium;
+    color: black;
+}
+
+.issueForm textarea.description {
+    color: black;
+    background-color: beige;
+    border-radius: 5px;
+    padding: 5px;
+}

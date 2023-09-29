@@ -4,8 +4,12 @@ import TreeGroup from "./TreeGroup";
 import { useFetching } from "../hooks/useFetching";
 import IssuesService from "../Api/IssuesService";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { setId } from "../store/slices/issueSlice";
-import { movingIssuesId, register, unRegister } from "../store/slices/movingSlice";
+import { setCurrentId } from "../store/slices/issueSlice";
+import {
+    movingIssuesId,
+    register,
+    unRegister,
+} from "../store/slices/movingSlice";
 
 export function TreeItem({ data }: { data: ITreeItem }) {
     const dispatch = useAppDispatch();
@@ -23,6 +27,10 @@ export function TreeItem({ data }: { data: ITreeItem }) {
         setExpanded(!isExpanded);
     });
 
+    const canExpand = () => {
+        return data.isLeaf;
+    };
+
     //Drag and drop
     const ids = useAppSelector(movingIssuesId);
     useEffect(() => {
@@ -37,6 +45,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
     };
 
     const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        console.log(event);
         event.preventDefault();
     };
 
@@ -47,7 +56,6 @@ export function TreeItem({ data }: { data: ITreeItem }) {
             dispatch(register(id));
             await IssuesService.moveIssue(id, data.id);
             dispatch(unRegister(id));
-
         }
     };
 
@@ -55,7 +63,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
         <div hidden={isHidden}>
             <li className="tree-item">
                 <div className="expander">
-                    <button hidden={data.isLeaf} onClick={fetchSubItems}>
+                    <button hidden={canExpand()} onClick={fetchSubItems}>
                         V
                     </button>
                 </div>
@@ -63,7 +71,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
                     draggable
                     onDragStart={(event) => dragStartHandler(event, data.id)}
                     className="tree-item-title"
-                    onClick={() => dispatch(setId(data.id))}
+                    onClick={() => dispatch(setCurrentId(data.id))}
                     onDragOver={allowDrop}
                     onDrop={dropHandler}>
                     {title}

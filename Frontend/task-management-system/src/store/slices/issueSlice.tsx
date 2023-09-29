@@ -2,30 +2,37 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
 interface IssueState {
-    id: string;
+    currentId?: string;
+    parentId?: string;
 }
 
-const initialState: IssueState = {
-    id: "",
-};
+const initialState: IssueState = {};
 
 export const issueSlice = createSlice({
     name: "currentIssue",
     initialState,
     reducers: {
-        reset: (state) => {
-            state.id = "";
+        resetCurrentId: (state) => {
+            state.currentId = undefined;
         },
-        setId: (state, action: PayloadAction<string>) => {
-            state.id = action.payload;
+        resetParentId: (state) => {
+            state.parentId = undefined;
+        },
+        setCurrentId: (state, action: PayloadAction<string>) => {
+            state.currentId = action.payload;
+        },
+        setParentId: (state, action: PayloadAction<string>) => {
+            state.parentId = action.payload;
         },
     },
 });
 
-// Сгенерированные Создатели Действий/ action creators
-export const { reset, setId } = issueSlice.actions;
+export const { resetCurrentId, resetParentId, setCurrentId, setParentId } =
+    issueSlice.actions;
 
-// Весь остальной код может использовать тип `RootState`
-export const selectCurrentIssueId = (state: RootState) => state.currentIssueReducer.id;
+export const selectCurrentIssueId = (state: RootState) =>
+    state.currentIssueReducer.currentId;
+export const selectParentIssueId = (state: RootState) =>
+    state.currentIssueReducer.parentId;
 
 export default issueSlice.reducer;
