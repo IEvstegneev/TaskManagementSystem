@@ -10,7 +10,7 @@ import {
     unRegister,
 } from "../store/slices/movingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { resetCurrentId } from "../store/slices/issueSlice";
+import { resetCurrentId, resetParentId } from "../store/slices/issueSlice";
 
 function TreeView() {
     const [items, setItems] = useState<ITreeItem[]>([]);
@@ -41,6 +41,7 @@ function TreeView() {
     };
 
     const createIssue = () => {
+        dispatch(resetParentId());
         dispatch(resetCurrentId());
     };
 

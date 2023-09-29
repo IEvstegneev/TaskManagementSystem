@@ -42,8 +42,28 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode))]
         public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id)
         {
-            var respone = await _tree.GetNodeAsync(id);
-            return Ok(respone);
+            var issue = await _tree.GetNodeAsync(id);
+            if (issue == null)
+                return NotFound();
+
+            var children = await _tree.GetChildrenAsync(id);
+
+            var response = new IssueNodeDto
+            {
+                Id = issue.Id,
+                Title = issue.Title,
+                IsLeaf = issue.IsLeaf,
+                IsRoot = issue.IsRoot,
+                Children = children.Select(x => new IssueNodeShortDto
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    IsLeaf = x.IsLeaf,
+                    IsRoot = x.IsRoot
+                }).ToArray()
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("{id:guid}/descendants")]
@@ -51,6 +71,14 @@ namespace TaskManagementSystem.WebApi.Controllers
         public async Task<IActionResult> GetIssueDescendantsAsync([FromRoute] Guid id)
         {
             var respone = await _tree.GetDescendantsAsync(id);
+            return Ok(respone);
+        }
+
+        [HttpGet("{id:guid}/children")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode[]))]
+        public async Task<IActionResult> GetIssueChildrenAsync([FromRoute] Guid id)
+        {
+            var respone = await _tree.GetChildrenAsync(id);
             return Ok(respone);
         }
 

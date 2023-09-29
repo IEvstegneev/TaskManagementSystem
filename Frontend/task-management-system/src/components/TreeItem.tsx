@@ -45,7 +45,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
     };
 
     const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        console.log(event);
+        //console.log(event);
         event.preventDefault();
     };
 

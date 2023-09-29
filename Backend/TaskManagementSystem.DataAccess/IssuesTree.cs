@@ -45,6 +45,23 @@ namespace TaskManagementSystem.DataAccess
             return descendants;
         }
 
+        public async Task<IssueNode[]> GetChildrenAsync(Guid parentId)
+        {
+            var childrenIds = _context.IssueLinks
+                 .AsNoTracking()
+                 .Where(x => x.ParentId == parentId)
+                 .Where(x => x.Depth == 1)
+                 .Select(x => x.ChildId);
+
+            var children = await _context.IssueNodes
+                .AsNoTracking()
+                .Join(childrenIds, x => x.Id, x => x, (x, y) => x)
+                //.Select(x => x.Title)
+                .ToArrayAsync();
+
+            return children;
+        }
+
         public async Task<Guid> CreateNodeAsync(IssueNode node, Guid? parentId = null)
         {
             if (parentId.HasValue)
@@ -64,16 +81,54 @@ namespace TaskManagementSystem.DataAccess
             return node.Id;
         }
 
+        public async Task DeleteNodeAsync(Guid id)
+        {
+            var node = await _context.IssueNodes
+                .AsNoTracking()
+                .Include(x => x.Descendants)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (node != null)
+            {
+
+    //            var oldLinks = _context.IssueLinks
+    //.Where(x => x.ChildId == node.Id)
+
+    //            _context.IssueLinks.RemoveRange(oldLinks);
+    //            _context.IssueNodes.Remove(node);
+    //            _context.IssueNodes.RemoveRange(node.Descendants);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
+
         public async Task MoveNodeAsync(Guid id, Guid? to = null)
         {
             var node = await _context.IssueNodes.FindAsync(id);
             if (node != null)
             {
-                BreakLinks(node);
+                BreakParentLinks(node);
                 if (to.HasValue)
                 {
-                    await MakeLinksAsync(id, to.Value);
-                    node.IsRoot = false;
+                    var newParent = await _context.IssueNodes.FindAsync(to);
+                    if (newParent != null)
+                    {
+                        //var isMovingToChild = await _context.IssueLinks
+                        //    .AsNoTracking()
+                        //    .AnyAsync(c => c.ParentId == node.Id && c.ChildId == to);
+
+                        //if (isMovingToChild)
+                        //    BreakChildLinks(node);
+
+                        newParent.IsLeaf = false;
+                        node.IsRoot = false;
+                        await MakeLinksAsync(id, to.Value);
+                    }
+                    else
+                        throw new ArgumentException(); // not found
+
                 }
                 await _context.SaveChangesAsync();
             }
@@ -94,7 +149,7 @@ namespace TaskManagementSystem.DataAccess
                     => _context.Add(new IssueLink(x.ParentId, from, x.Depth + 1)));
         }
 
-        private void BreakLinks(IssueNode node)
+        private void BreakParentLinks(IssueNode node)
         {
             var oldLinks = _context.IssueLinks
                 .Where(x => x.ChildId == node.Id)
@@ -102,5 +157,13 @@ namespace TaskManagementSystem.DataAccess
             _context.IssueLinks.RemoveRange(oldLinks);
             node.IsRoot = true;
         }
+
+        //private void BreakChildLinks(IssueNode node)
+        //{
+        //    var oldLinks = _context.IssueLinks
+        //        .Where(x => x.ParentId == node.Id)
+        //        .Where(x => x.Depth > 0);
+        //    _context.IssueLinks.RemoveRange(oldLinks);
+        //}
     }
 }

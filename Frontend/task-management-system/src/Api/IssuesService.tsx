@@ -50,9 +50,9 @@ export default class IssuesService {
         return data;
     }
 
-    static async updateIssue(issue: IUpdateIssueRequest) {
-        const { status } = await axios.put<string>(
-            "https://localhost:7081/issues/",
+    static async updateIssue(id: string, issue: IUpdateIssueRequest) {
+        const { status } = await axios.put(
+            `https://localhost:7081/issues/${id}`,
             issue,
             {
                 headers: {
@@ -65,8 +65,8 @@ export default class IssuesService {
     }
 
     static async deleteIssue(id: string) {
-        const { status } = await axios.delete<string>(
-            "https://localhost:7081/issues/"
+        const { status } = await axios.delete(
+            `https://localhost:7081/issues/${id}`
         );
         return status === 204;
     }

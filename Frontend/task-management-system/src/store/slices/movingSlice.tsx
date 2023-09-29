@@ -17,7 +17,6 @@ export const movingSlice = createSlice({
             state.ids = [];
         },
         register: (state, action: PayloadAction<string>) => {
-            console.log("from register");
             state.ids = [...state.ids, action.payload];
         },
         unRegister: (state, action: PayloadAction<string>) => {

@@ -41,20 +41,20 @@ function IssueView() {
     };
 
     const [updateIssue, isUpdating, updateError] = useFetching(async () => {
-        await IssuesService.updateIssue({
-            title,
-            performers,
-            description,
-        });
+        if (issue)
+            await IssuesService.updateIssue(issue?.id, {
+                title,
+                performers,
+                description,
+            });
         setIsReadMode(false);
     });
     const [deleteIssue, isDeleting, deleteError] = useFetching(async () => {
-        if (issue){
+        if (issue) {
             await IssuesService.deleteIssue(issue.id);
-            resetCurrentId();
+            dispatch(resetCurrentId());
         }
     });
-
 
     const addNewIssue = () => {
         dispatch(resetCurrentId());
