@@ -7,7 +7,6 @@ namespace TaskManagementSystem.DataAccess
     public class DataContext : DbContext
     {
         public DbSet<IssueNode> IssueNodes { get; private set; }
-        public DbSet<IssueLink> IssueLinks { get; private set; }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
@@ -17,7 +16,6 @@ namespace TaskManagementSystem.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new IssueNodeConfiguration());
-            modelBuilder.ApplyConfiguration(new ClosureConfiguration());
             base.OnModelCreating(modelBuilder);
         }
     }
@@ -30,45 +28,11 @@ namespace TaskManagementSystem.DataAccess
             builder.Property(x => x.IsRoot)
                 .IsRequired();
 
-            //builder.HasMany(parent => parent.Children)
-            //    .WithOne()
-            //    .HasForeignKey(node => node.ParentId)
-            //    .IsRequired(false)
-            //    .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasMany(x => x.Descendants)
+            builder.HasMany(node => node.Children)
                 .WithOne()
-                .HasForeignKey(x => x.ParentId)
-                .IsRequired()
+                .HasForeignKey(node => node.ParentId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(x => x.Ancestors)
-                .WithOne()
-                .HasForeignKey(x => x.ChildId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-        }
-    }
-
-    internal class ClosureConfiguration : IEntityTypeConfiguration<IssueLink>
-    {
-        public void Configure(EntityTypeBuilder<IssueLink> builder)
-        {
-            builder.HasKey(closure => new { closure.ParentId, closure.ChildId });
-            builder.Property(x => x.Depth)
-                .HasDefaultValue(0)
-                .IsRequired();
-            //builder.HasOne(x => x.Parent)
-            //    .WithMany()
-            //    .HasForeignKey(x => x.ParentId)
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.Restrict);
-
-            //builder.HasOne(x => x.Child)
-            //    .WithMany()
-            //    .HasForeignKey(x => x.ChildId)
-            //    .IsRequired()
-            //    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

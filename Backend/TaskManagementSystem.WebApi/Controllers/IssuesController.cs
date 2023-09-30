@@ -33,7 +33,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IssueNodeShortDto>))]
         public async Task<IActionResult> GetRootIssuesAsync([FromQuery] Guid? parentId)
         {
-            var nodes = await _tree.GetRootNodesAsync();
+            var nodes = await _tree.GetRootNodesListAsync();
             var response = _mapper.Map<IssueNodeShortDto[]>(nodes);
             return Ok(response);
         }
@@ -46,7 +46,6 @@ namespace TaskManagementSystem.WebApi.Controllers
             if (issue == null)
                 return NotFound();
 
-            var children = await _tree.GetChildrenAsync(id);
 
             var response = new IssueNodeDto
             {
@@ -54,7 +53,7 @@ namespace TaskManagementSystem.WebApi.Controllers
                 Title = issue.Title,
                 IsLeaf = issue.IsLeaf,
                 IsRoot = issue.IsRoot,
-                Children = children.Select(x => new IssueNodeShortDto
+                Children = issue.Children.Select(x => new IssueNodeShortDto
                 {
                     Id = x.Id,
                     Title = x.Title,
@@ -66,19 +65,11 @@ namespace TaskManagementSystem.WebApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id:guid}/descendants")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode[]))]
-        public async Task<IActionResult> GetIssueDescendantsAsync([FromRoute] Guid id)
-        {
-            var respone = await _tree.GetDescendantsAsync(id);
-            return Ok(respone);
-        }
-
         [HttpGet("{id:guid}/children")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode[]))]
         public async Task<IActionResult> GetIssueChildrenAsync([FromRoute] Guid id)
         {
-            var respone = await _tree.GetChildrenAsync(id);
+            var respone = await _tree.GetChildrenListAsync(id);
             return Ok(respone);
         }
 
@@ -95,9 +86,28 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
         public async Task<IActionResult> CreateIssueAsync([FromBody] CreateIssueRequest request)
         {
-            var node = new IssueNode(request.Title, !request.ParentId.HasValue);
+            var node = new IssueNode(request.Title, request.ParentId);
             var response = await _tree.CreateNodeAsync(node, request.ParentId);
             return CreatedAtRoute(new { Id = response }, response);
+        }
+
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> UpdateIssueAsync(
+            [FromRoute] Guid id, 
+            [FromBody] UpdateIssueRequest request)
+        {
+            var node = new IssueNode(request.Title);
+            var response = await _tree.UpdateNodeAsync(id, node);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeleteIssueAsync([FromRoute] Guid id)
+        {
+            await _tree.DeleteNodeAsync(id);
+            return NoContent();
         }
 
         /// <summary>

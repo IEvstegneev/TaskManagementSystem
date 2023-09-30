@@ -14,16 +14,21 @@
 
         public bool IsRoot { get; set; }
         public bool IsLeaf { get; set; }
-        public ICollection<IssueLink> Descendants { get; private set; } = new List<IssueLink>();
-        public ICollection<IssueLink> Ancestors { get; private set; } = new List<IssueLink>();
+        public Guid? ParentId { get; set; }
+        public ICollection<IssueNode> Children { get; set; }
 
-        public IssueNode(string title, bool isRoot)
+        public IssueNode(string title, Guid? parentId = null)
         {
             Title = title;
-            IsRoot = isRoot;
-            IsLeaf = true;
-        }
+            ParentId = parentId;
+         }
+
         public IssueNode(string title)
+        {
+            Title = title;
+        }
+
+        public void Update(string title)
         {
             Title = title;
         }
