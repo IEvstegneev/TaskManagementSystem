@@ -37,9 +37,9 @@ namespace TaskManagementSystem.DataAccess
             builder.Property(x => x.Status)
                 .IsRequired();
             builder.Property(x => x.EstimatedLaborCost)
+                .HasField("_estimatedLaborCost")
                 .IsRequired();
             builder.Property(x => x.ActualLaborCost)
-                .HasDefaultValue(new TimeSpan())
                 .HasField("_actualLaborCost")
                 .IsRequired();
             builder.Property(x => x.CreatedAt)
@@ -48,7 +48,6 @@ namespace TaskManagementSystem.DataAccess
                 .IsRequired(false);
             builder.Property(x => x.FinishedAt)
                 .IsRequired(false);
-
 
             builder.HasMany(node => node.Children)
                 .WithOne()

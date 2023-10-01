@@ -15,6 +15,10 @@ namespace TaskManagementSystem.Core.Dto
         public string? FinishedAt { get; init; }
         public required string EstimatedLaborCost { get; init; }
         public required string ActualLaborCost { get; init; }
-        public IssueNodeShortDto[]? Children { get; init; }
+        public IssueNodeChildDto[]? Children { get; init; }
+        public bool CanStart { get; init; }
+        public bool CanStop { get; init; }
+        public bool CanFinish { get; init; }
+
     }
 }

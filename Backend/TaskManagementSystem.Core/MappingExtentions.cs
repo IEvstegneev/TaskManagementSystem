@@ -11,7 +11,7 @@ namespace TaskManagementSystem.Core
                 title: dto.Title,
                 description: dto.Description,
                 performers: dto.Performers,
-                estimatedLaborCostInHours: TimeSpan.FromHours(dto.EstimatedLaborCost),
+                estimatedLaborCost: TimeSpan.FromHours(dto.EstimatedLaborCost),
                 parentId: dto.ParentId);
         }
 
@@ -28,16 +28,19 @@ namespace TaskManagementSystem.Core
                 Status = issue.Status,
                 EstimatedLaborCost = issue.EstimatedLaborCost.ToString("h':'mm':'ss"),
                 ActualLaborCost = issue.ActualLaborCost.ToString("h':'mm':'ss"),
-                //Math.Round(issue.ActualLaborCost.TotalHours, 1),
                 CreatedAt = issue.CreatedAt.ToString(),
                 FinishedAt = issue.FinishedAt?.ToString(),
-                Children = issue.Children.Select(x => new IssueNodeShortDto
+                Children = issue.Children.Select(x => new IssueNodeChildDto
                 {
                     Id = x.Id,
                     Title = x.Title,
-                    IsLeaf = x.IsLeaf,
-                    IsRoot = x.IsRoot
-                }).ToArray()
+                    Status = x.Status,
+                    EstimatedLaborCost = x.EstimatedLaborCost.ToString("h':'mm':'ss"),
+                    ActualLaborCost = x.ActualLaborCost.ToString("h':'mm':'ss")
+                }).ToArray(),
+                CanStart = issue.CanStart,
+                CanStop = issue.CanStop,
+                CanFinish = issue.CanFinish
             };
 
             return dto;

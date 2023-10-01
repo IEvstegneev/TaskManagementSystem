@@ -6,16 +6,38 @@ namespace TaskManagementSystem.Core.Domain
     public class IssueNode : BaseEntity
     {
         private TimeSpan _actualLaborCost;
+        private TimeSpan _estimatedLaborCost;
 
         public string Title { get; private set; }
         public string Description { get; private set; }
         public string Performers { get; private set; }
         public IssueStatus Status { get; private set; }
-        public TimeSpan EstimatedLaborCost { get; private set; }
-        public TimeSpan ActualLaborCost =>
-            Status == IssueStatus.InProgress
-                ? _actualLaborCost + (DateTime.Now - StartedAt!.Value)
-                : _actualLaborCost;
+        public TimeSpan EstimatedLaborCost
+        {
+            get
+            {
+                var result = _estimatedLaborCost;
+                foreach (var child in Children)
+                    result += child.EstimatedLaborCost;
+
+                return result;
+            }
+        }
+
+        public TimeSpan ActualLaborCost
+        {
+            get
+            {
+                var result = _actualLaborCost;
+                if (Status == IssueStatus.InProgress)
+                    result += (DateTime.Now - StartedAt!.Value);
+
+                foreach (var child in Children)
+                    result += child.ActualLaborCost;
+
+                return result;
+            }
+        }
 
         public DateTime CreatedAt { get; private set; }
         public DateTime? StartedAt { get; private set; }
@@ -25,28 +47,37 @@ namespace TaskManagementSystem.Core.Domain
         public bool IsLeaf { get; set; }
         public Guid? ParentId { get; set; }
         public ICollection<IssueNode> Children { get; set; }
-
-        public IssueNode(string title, Guid? parentId = null)
+        public bool CanStart => Status == IssueStatus.Assigned || Status == IssueStatus.Stopped;
+        public bool CanStop => Status == IssueStatus.InProgress;
+        public bool CanFinish
         {
-            Title = title;
-
-            ParentId = parentId;
+            get
+            {
+                var result = Status == IssueStatus.InProgress;
+                foreach (var child in Children)
+                {
+                    result &= child.CanFinish;
+                    if (!result) break;
+                }
+                return result;
+            }
         }
 
         public IssueNode(
             string title,
             string description,
             string performers,
-            TimeSpan estimatedLaborCostInHours,
-            Guid? parentId = null) : this(title)
+            TimeSpan estimatedLaborCost,
+            Guid? parentId = null)
         {
             Title = title;
             Description = description;
             Performers = performers;
             Status = IssueStatus.Assigned;
             CreatedAt = DateTime.Now;
-            EstimatedLaborCost =  estimatedLaborCostInHours;
+            _estimatedLaborCost = estimatedLaborCost;
             ParentId = parentId;
+            Children = new List<IssueNode>();
         }
 
         public void Update(UpdateIssueDto data)
@@ -58,12 +89,13 @@ namespace TaskManagementSystem.Core.Domain
             if (data.Performers != null)
                 Performers = data.Performers;
             if (data.EstimatedLaborCost != null)
-                EstimatedLaborCost = TimeSpan.FromHours(data.EstimatedLaborCost.Value);
+                _estimatedLaborCost = TimeSpan.FromHours(data.EstimatedLaborCost.Value);
         }
+
 
         public void Start()
         {
-            if (Status == IssueStatus.Assigned || Status == IssueStatus.Stopped)
+            if (CanStart)
             {
                 Status = IssueStatus.InProgress;
                 StartedAt = DateTime.Now;
@@ -74,10 +106,10 @@ namespace TaskManagementSystem.Core.Domain
 
         public void Stop()
         {
-            if (Status == IssueStatus.InProgress && StartedAt != null)
+            if (CanStop)
             {
                 Status = IssueStatus.Stopped;
-                _actualLaborCost += DateTime.Now - StartedAt.Value;
+                _actualLaborCost += DateTime.Now - StartedAt!.Value;
                 StartedAt = null;
             }
             else
@@ -86,31 +118,15 @@ namespace TaskManagementSystem.Core.Domain
 
         public void Finish()
         {
-            if (Status == IssueStatus.InProgress && StartedAt != null)
+            if (CanFinish)
             {
                 Status = IssueStatus.Finished;
-                _actualLaborCost += DateTime.Now - StartedAt.Value;
+                _actualLaborCost += DateTime.Now - StartedAt!.Value;
                 StartedAt = null;
                 FinishedAt = DateTime.Now;
             }
             else
                 throw new StopIssueException($"Cannot finish the issue. Actual Status is {Status}");
-        }
-
-
-    }
-
-    public class IssueLink
-    {
-        public Guid ParentId { get; private set; }
-        public Guid ChildId { get; private set; }
-        public int Depth { get; private set; }
-
-        public IssueLink(Guid parentId, Guid childId, int depth)
-        {
-            ParentId = parentId;
-            ChildId = childId;
-            Depth = depth;
         }
     }
 }

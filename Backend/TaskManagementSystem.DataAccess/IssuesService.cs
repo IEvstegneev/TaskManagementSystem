@@ -40,11 +40,15 @@ namespace TaskManagementSystem.DataAccess
         public async Task<IssueNodeDto?> GetIssueAsync(Guid id)
         {
             var issue = await _context.IssueNodes
-                .Include(x => x.Children)
                 .FirstOrDefaultAsync(x => x.Id == id);
+            //var issue = await _context.IssueNodes
+            //    .Where(x => x.Id == id)
+            //    .FirstOrDefaultAsync();
 
             if (issue == null)
                 return null;
+
+            await _context.IssueNodes.LoadAsync();
 
             return issue.ToIssueNodeDto();
         }
