@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using TaskManagementSystem.Core.Domain;
 using TaskManagementSystem.Core.Dto;
@@ -36,6 +35,10 @@ namespace TaskManagementSystem.WebApi.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Gets child issues list.
+        /// </summary>
+        /// <param name="id">Issue id.</param>
         [HttpGet("{id:guid}/children")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNodeShortDto[]))]
         public async Task<IActionResult> GetIssueChildrenAsync([FromRoute] Guid id)
@@ -44,8 +47,12 @@ namespace TaskManagementSystem.WebApi.Controllers
             return Ok(respone);
         }
 
+        /// <summary>
+        /// Gets issue detail data.
+        /// </summary>
+        /// <param name="id">Issue id.</param>
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNodeDto))]
         public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id)
         {
             var dto = await _issueService.GetIssueAsync(id);
@@ -61,7 +68,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         /// </summary>
         /// <param name="request" example='
         /// {
-        ///  "title": "The main issue"
+        ///  "title": "The great task."
         /// }
         /// '>Create issue request dto.</param>
         /// <response code="201">If created.</response>
@@ -73,6 +80,12 @@ namespace TaskManagementSystem.WebApi.Controllers
             return CreatedAtRoute(new { Id = response }, response);
         }
 
+        /// <summary>
+        /// Updates the necessary data.
+        /// </summary>
+        /// <param name="id">Issue id.</param>
+        /// <param name="request">New data.</param>
+        /// <returns></returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateIssueAsync(
@@ -88,6 +101,10 @@ namespace TaskManagementSystem.WebApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Delete an issue.
+        /// </summary>
+        /// <param name="id">Issue id.</param>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteIssueAsync([FromRoute] Guid id)
@@ -97,7 +114,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         }
 
         /// <summary>
-        /// Move an issue.
+        /// Move an issue into other issue.
         /// </summary>
         /// <response code="200">If moved.</response>
         [HttpGet("{id:guid}/move")]
@@ -122,14 +139,18 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> MoveToRootAsync([FromRoute] Guid id)
         {
-            await _issueService.MoveNodeAsync(id, null);
+            await _issueService.MoveNodeToRootAsync(id);
             return NoContent();
         }
 
-
+        /// <summary>
+        /// Change issue status.
+        /// </summary>
+        /// <param name="id">Target issue id.</param>
+        /// <param name="status">The new status.</param>
         [HttpGet("{id:guid}/change-status")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueStatus))]
-        public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id, [FromQuery] IssueStatus status)
+        public async Task<IActionResult> ChangeIssueStatusAsync([FromRoute] Guid id, [FromQuery] IssueStatus status)
         {
             var result = await _issueService.ChangeStatusAsync(id, status);
             if (result == null)

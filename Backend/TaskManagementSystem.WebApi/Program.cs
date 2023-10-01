@@ -1,6 +1,6 @@
 using TaskManagementSystem.DataAccess;
-using AutoMapper;
 using System.Reflection;
+using Microsoft.OpenApi.Models;
 
 namespace TaskManagementSystem.WebApi
 {
@@ -14,7 +14,13 @@ namespace TaskManagementSystem.WebApi
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Task Management System Api", Version = "v1" });
+                var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlFullPath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
+                c.IncludeXmlComments(xmlFullPath);
+            });
             services.AddDataAccessLayer(configuration);
             services.AddCors(x => x.AddPolicy("Frontend",
                 x =>
