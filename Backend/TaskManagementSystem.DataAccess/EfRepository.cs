@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Core;
+using TaskManagementSystem.Core.Domain;
 
 namespace TaskManagementSystem.DataAccess
 {

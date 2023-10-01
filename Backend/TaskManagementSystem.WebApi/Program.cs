@@ -16,7 +16,6 @@ namespace TaskManagementSystem.WebApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddDataAccessLayer(configuration);
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddCors(x => x.AddPolicy("Frontend",
                 x =>
                 {

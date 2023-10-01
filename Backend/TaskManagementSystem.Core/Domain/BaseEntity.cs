@@ -1,4 +1,4 @@
-﻿namespace TaskManagementSystem.Core
+﻿namespace TaskManagementSystem.Core.Domain
 {
     public class BaseEntity
     {

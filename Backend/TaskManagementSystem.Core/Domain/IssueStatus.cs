@@ -1,8 +1,8 @@
-﻿namespace TaskManagementSystem.Core
+﻿namespace TaskManagementSystem.Core.Domain
 {
     public enum IssueStatus
     {
-        Assigned, 
+        Assigned,
         InProgress,
         Stopped,
         Finished

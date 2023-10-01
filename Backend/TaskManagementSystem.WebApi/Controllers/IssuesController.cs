@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using TaskManagementSystem.Core.Domain;
+using TaskManagementSystem.Core.Dto;
 using TaskManagementSystem.Core;
 using TaskManagementSystem.DataAccess;
-using TaskManagementSystem.WebApi.Dto;
 
 namespace TaskManagementSystem.WebApi.Controllers
 {
@@ -14,14 +15,12 @@ namespace TaskManagementSystem.WebApi.Controllers
     public class IssuesController : ControllerBase
     {
         private readonly ILogger<IssuesController> _logger;
-        private readonly IMapper _mapper;
-        private readonly IssuesTree _tree;
+        private readonly IssuesService _issueService;
 
-        public IssuesController(ILogger<IssuesController> logger, IMapper mapper, IssuesTree tree)
+        public IssuesController(ILogger<IssuesController> logger, IssuesService issueService)
         {
             _logger = logger;
-            _mapper = mapper;
-            _tree = tree;
+            _issueService = issueService;
         }
 
         /// <summary>
@@ -30,48 +29,32 @@ namespace TaskManagementSystem.WebApi.Controllers
         /// <param name="parentId">Parent issue id.</param>
         /// <response code="200">If successed.</response>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<IssueNodeShortDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNodeShortDto[]))]
         public async Task<IActionResult> GetRootIssuesAsync([FromQuery] Guid? parentId)
         {
-            var nodes = await _tree.GetRootNodesListAsync();
-            var response = _mapper.Map<IssueNodeShortDto[]>(nodes);
+            var response = await _issueService.GetRootIssuesListAsync();
             return Ok(response);
+        }
+
+        [HttpGet("{id:guid}/children")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNodeShortDto[]))]
+        public async Task<IActionResult> GetIssueChildrenAsync([FromRoute] Guid id)
+        {
+            var respone = await _issueService.GetChildrenListAsync(id);
+            return Ok(respone);
         }
 
         [HttpGet("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode))]
         public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id)
         {
-            var issue = await _tree.GetNodeAsync(id);
-            if (issue == null)
+            var dto = await _issueService.GetIssueAsync(id);
+            if (dto == null)
                 return NotFound();
 
-
-            var response = new IssueNodeDto
-            {
-                Id = issue.Id,
-                Title = issue.Title,
-                IsLeaf = issue.IsLeaf,
-                IsRoot = issue.IsRoot,
-                Children = issue.Children.Select(x => new IssueNodeShortDto
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    IsLeaf = x.IsLeaf,
-                    IsRoot = x.IsRoot
-                }).ToArray()
-            };
-
-            return Ok(response);
+            return Ok(dto);
         }
 
-        [HttpGet("{id:guid}/children")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNode[]))]
-        public async Task<IActionResult> GetIssueChildrenAsync([FromRoute] Guid id)
-        {
-            var respone = await _tree.GetChildrenListAsync(id);
-            return Ok(respone);
-        }
 
         /// <summary>
         /// Create an issue.
@@ -84,10 +67,9 @@ namespace TaskManagementSystem.WebApi.Controllers
         /// <response code="201">If created.</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
-        public async Task<IActionResult> CreateIssueAsync([FromBody] CreateIssueRequest request)
+        public async Task<IActionResult> CreateIssueAsync([FromBody] CreateIssueDto request)
         {
-            var node = new IssueNode(request.Title, request.ParentId);
-            var response = await _tree.CreateNodeAsync(node, request.ParentId);
+            var response = await _issueService.CreateNodeAsync(request, request.ParentId);
             return CreatedAtRoute(new { Id = response }, response);
         }
 
@@ -95,10 +77,14 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateIssueAsync(
             [FromRoute] Guid id, 
-            [FromBody] UpdateIssueRequest request)
+            [FromBody] UpdateIssueDto request)
         {
-            var node = new IssueNode(request.Title);
-            var response = await _tree.UpdateNodeAsync(id, node);
+            var response = await _issueService.UpdateNodeAsync(id, request);
+            if (response == null)
+            {
+                return BadRequest();
+            }
+
             return NoContent();
         }
 
@@ -106,7 +92,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteIssueAsync([FromRoute] Guid id)
         {
-            await _tree.DeleteNodeAsync(id);
+            await _issueService.DeleteNodeAsync(id);
             return NoContent();
         }
 
@@ -120,10 +106,10 @@ namespace TaskManagementSystem.WebApi.Controllers
         public async Task<IActionResult> MoveIssueAsync([FromRoute] Guid id, [FromQuery] Guid to)
         {
             if (id == to)
-                return BadRequest("Попытка переместить пункт внутрь в самого себя");
+                return BadRequest("Moving issue id and destination issue id should be different.");
 
             // return operation result ?
-            await _tree.MoveNodeAsync(id, to);
+            await _issueService.MoveNodeAsync(id, to);
 
             return NoContent();
         }
@@ -136,8 +122,20 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> MoveToRootAsync([FromRoute] Guid id)
         {
-            await _tree.MoveNodeAsync(id);
+            await _issueService.MoveNodeAsync(id);
             return NoContent();
+        }
+
+
+        [HttpGet("{id:guid}/change-status")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueStatus))]
+        public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id, [FromQuery] IssueStatus status)
+        {
+            var result = await _issueService.ChangeStatusAsync(id, status);
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
         }
     }
 }

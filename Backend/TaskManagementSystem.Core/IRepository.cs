@@ -1,4 +1,6 @@
-﻿namespace TaskManagementSystem.Core
+﻿using TaskManagementSystem.Core.Domain;
+
+namespace TaskManagementSystem.Core
 {
     public interface IRepository<T> where T : BaseEntity
     {
