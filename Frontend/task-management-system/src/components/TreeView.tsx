@@ -10,7 +10,7 @@ import {
     unRegister,
 } from "../store/slices/movingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { resetCurrentId, resetParentId } from "../store/slices/issueSlice";
+import { resetCurrentId, resetParentId, selectCurrentIssueId } from "../store/slices/issueSlice";
 
 function TreeView() {
     const [items, setItems] = useState<ITreeItem[]>([]);
@@ -19,14 +19,15 @@ function TreeView() {
         setItems(issues);
     });
 
-    useEffect(() => {
-        fetchIssues();
-    }, []);
-
+    // useEffect(() => {
+    //     fetchIssues();
+    // }, []);
+    
+    const currentId = useAppSelector(selectCurrentIssueId);
     const ids = useAppSelector(movingIssuesId);
     useEffect(() => {
         fetchIssues();
-    }, [ids]);
+    }, [ids, currentId]);
 
     const dispatch = useAppDispatch();
     const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {

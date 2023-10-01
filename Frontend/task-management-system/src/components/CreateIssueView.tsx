@@ -11,6 +11,7 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [performers, setPerformers] = useState("");
+    const [hours, setHours] = useState(0);
 
     const [addNewIssue, isLoading, error] = useFetching(async () => {
         const id = await IssuesService.postIssue({
@@ -18,8 +19,9 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
             title,
             performers,
             description,
+            estimatedLaborCost: hours
         });
-        dispatch(setCurrentId(id));
+        dispatch(setCurrentId(parentId ? parentId : id));
     });
 
     return (
@@ -34,6 +36,7 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
                             value={title}
                             onChange={(event) => setTitle(event.target.value)}
                             placeholder="Введите наименование задачи"
+                            minLength={1}
                         />
                     </label>
                 </div>
@@ -48,6 +51,7 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
                                 setPerformers(event.target.value)
                             }
                             placeholder="Введите исполнителей задачи"
+                            minLength={1}
                         />
                     </label>
                 </div>
@@ -63,6 +67,19 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
                             placeholder="Введите описание задачи, не более 2000 символов."
                             rows={5}
                             maxLength={2000}></textarea>
+                    </label>
+                </div>
+                <div className="mb-3">
+                    <label>
+                        Плановая трудоёмкость задачи, час
+                        <input
+                            type="number"
+                            className="estimatedLaborCost"
+                            value={hours}
+                            onChange={(event) =>
+                                setHours(event.target.valueAsNumber)
+                            }
+                        />
                     </label>
                 </div>
             </div>

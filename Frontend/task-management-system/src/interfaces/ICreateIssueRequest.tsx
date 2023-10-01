@@ -3,4 +3,9 @@ export interface ICreateIssueRequest {
     title: string;
     description: string;
     performers: string;
+    estimatedLaborCost: number;
+}
+
+export interface ITimeSpan {
+    ticks: number;
 }
