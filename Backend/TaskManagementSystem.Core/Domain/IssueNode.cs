@@ -56,7 +56,8 @@ namespace TaskManagementSystem.Core.Domain
                 var result = Status == IssueStatus.InProgress;
                 foreach (var child in Children)
                 {
-                    result &= child.CanFinish;
+                    result &= child.Status == IssueStatus.InProgress 
+                        || child.Status == IssueStatus.Finished;
                     if (!result) break;
                 }
                 return result;
@@ -120,9 +121,11 @@ namespace TaskManagementSystem.Core.Domain
         {
             if (CanFinish)
             {
+                foreach (var child in Children)
+                    child.Finish();
+
                 Status = IssueStatus.Finished;
                 _actualLaborCost += DateTime.Now - StartedAt!.Value;
-                StartedAt = null;
                 FinishedAt = DateTime.Now;
             }
             else

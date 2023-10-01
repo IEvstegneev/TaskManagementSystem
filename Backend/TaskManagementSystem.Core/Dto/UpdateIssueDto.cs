@@ -5,6 +5,6 @@
         public string? Title { get; init; }
         public string? Description { get; init; }
         public string? Performers { get; init; }
-        public int? EstimatedLaborCost { get; init; }
+        public double? EstimatedLaborCost { get; init; }
     }
 }

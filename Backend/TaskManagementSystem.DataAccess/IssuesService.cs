@@ -41,9 +41,6 @@ namespace TaskManagementSystem.DataAccess
         {
             var issue = await _context.IssueNodes
                 .FirstOrDefaultAsync(x => x.Id == id);
-            //var issue = await _context.IssueNodes
-            //    .Where(x => x.Id == id)
-            //    .FirstOrDefaultAsync();
 
             if (issue == null)
                 return null;
@@ -131,22 +128,29 @@ namespace TaskManagementSystem.DataAccess
 
         public async Task<IssueStatus?> ChangeStatusAsync(Guid id, IssueStatus status)
         {
-            var node = await _context.IssueNodes.FindAsync(id);
-            if (node != null)
+            var issue = await _context.IssueNodes
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (issue != null)
             {
                 switch (status)
                 {
-                    case IssueStatus.InProgress: node.Start();
+                    case IssueStatus.InProgress:
+                        issue.Start();
                         break;
-                    case IssueStatus.Stopped: node.Stop();
+                    case IssueStatus.Stopped:
+                        issue.Stop();
                         break;
-                    case IssueStatus.Finished: node.Finish();
+                    case IssueStatus.Finished:
+                        {
+                            await _context.IssueNodes.LoadAsync();
+                            issue.Finish();
+                        };
                         break;
                     default:
                         break;
                 }
                 await _context.SaveChangesAsync();
-                return node.Status;
+                return issue.Status;
             }
             return null;
         }

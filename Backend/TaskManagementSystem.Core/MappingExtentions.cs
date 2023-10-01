@@ -26,8 +26,8 @@ namespace TaskManagementSystem.Core
                 Description = issue.Description,
                 Performers = issue.Performers,
                 Status = issue.Status,
-                EstimatedLaborCost = issue.EstimatedLaborCost.ToString("h':'mm':'ss"),
-                ActualLaborCost = issue.ActualLaborCost.ToString("h':'mm':'ss"),
+                EstimatedLaborCost = LaborCostFormat(issue.EstimatedLaborCost),
+                ActualLaborCost = LaborCostFormat(issue.ActualLaborCost),
                 CreatedAt = issue.CreatedAt.ToString(),
                 FinishedAt = issue.FinishedAt?.ToString(),
                 Children = issue.Children.Select(x => new IssueNodeChildDto
@@ -35,8 +35,8 @@ namespace TaskManagementSystem.Core
                     Id = x.Id,
                     Title = x.Title,
                     Status = x.Status,
-                    EstimatedLaborCost = x.EstimatedLaborCost.ToString("h':'mm':'ss"),
-                    ActualLaborCost = x.ActualLaborCost.ToString("h':'mm':'ss")
+                    EstimatedLaborCost = LaborCostFormat(x.EstimatedLaborCost),
+                    ActualLaborCost = LaborCostFormat(x.ActualLaborCost),
                 }).ToArray(),
                 CanStart = issue.CanStart,
                 CanStop = issue.CanStop,
@@ -45,5 +45,9 @@ namespace TaskManagementSystem.Core
 
             return dto;
         }
+
+        private static string LaborCostFormat(TimeSpan time)
+            => $"{(time.Days > 0 ? time.Days + " дн" : "")} "
+            + $"{Math.Round(time.Hours + time.Minutes / 60.0, 2)} ч";
     }
 }
