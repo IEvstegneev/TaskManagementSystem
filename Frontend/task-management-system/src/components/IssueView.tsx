@@ -10,6 +10,7 @@ import {
 } from "../store/slices/issueSlice";
 import { IIssue } from "../interfaces/IIssue";
 import { IssueStatus } from "../interfaces/IssueStatus";
+import { IssueItem } from "./IssueItem";
 
 function IssueView() {
     const dispatch = useAppDispatch();
@@ -20,23 +21,21 @@ function IssueView() {
     const [performers, setPerformers] = useState<string>();
     const [description, setDescription] = useState<string>();
     const [status, setStatus] = useState(IssueStatus.Assigned);
-    const [canStart, setCanStart] = useState(false);
-    const [canStopOrFinish, setCanStopOrFinish] = useState(false);
-    const [createAt, setCreateAt] = useState("123");
+    // const [canStart, setCanStart] = useState(false);
+    // const [canStopOrFinish, setCanStopOrFinish] = useState(false);
 
     const [fetchIssue, isFetching, fetchError] = useFetching(async () => {
         const response = await IssuesService.getIssue(currentId as string);
         setIssue(response);
-        setCreateAt(response.createdAt);
-        setStatus(response.status);
+        //setStatus(response.status);
         setTitle(response.title);
         setPerformers(response.performers);
         setDescription(response.description);
-        setCanStart(
-            response.status === IssueStatus.Assigned ||
-                response.status === IssueStatus.Stopped
-        );
-        setCanStopOrFinish(response.status === IssueStatus.InProgress);
+        // setCanStart(
+        //     response.status === IssueStatus.Assigned ||
+        //         response.status === IssueStatus.Stopped
+        // );
+        // setCanStopOrFinish(response.status === IssueStatus.InProgress);
     });
 
     useEffect(() => {
@@ -74,26 +73,29 @@ function IssueView() {
 
     const [startIssue] = useFetching(async () => {
         if (issue) {
-            setStatus(IssueStatus.InProgress);
-            setCanStopOrFinish(true);
-            setCanStart(false);
+            // setStatus(IssueStatus.InProgress);
+            // setCanStopOrFinish(true);
+            // setCanStart(false);
             await IssuesService.startIssue(issue.id);
+            setStatus(IssueStatus.InProgress);
         }
     });
     const [stopIssue] = useFetching(async () => {
         if (issue) {
-            setStatus(IssueStatus.Stopped);
-            setCanStart(true);
-            setCanStopOrFinish(false);
+            // setStatus(IssueStatus.Stopped);
+            // setCanStart(true);
+            // setCanStopOrFinish(false);
             await IssuesService.stopIssue(issue.id);
+            setStatus(IssueStatus.Stopped);
         }
     });
     const [finishIssue] = useFetching(async () => {
         if (issue) {
-            setStatus(IssueStatus.Finished);
-            setCanStopOrFinish(false);
-            setCanStart(false);
+            // setStatus(IssueStatus.Finished);
+            // setCanStopOrFinish(false);
+            // setCanStart(false);
             await IssuesService.finishIssue(issue.id);
+            setStatus(IssueStatus.Finished);
         }
     });
 
@@ -182,7 +184,10 @@ function IssueView() {
                                 </div>
                                 <div className="issueStatusContainer">
                                     <h6>
-                                        Статус задачи: {IssueStatus[status]}
+                                        Статус задачи:{" "}
+                                        {issue
+                                            ? IssueStatus[issue.status]
+                                            : " - "}
                                     </h6>
                                     <h6>
                                         Дата регистрации задачи:{" "}
@@ -205,14 +210,14 @@ function IssueView() {
                                     <button
                                         type="button"
                                         className="btn btn-primary"
-                                        disabled={!canStart}
+                                        disabled={!issue?.canStart}
                                         onClick={startIssue}>
                                         Начать
                                     </button>
                                     <button
                                         type="button"
                                         className="btn btn-secondary"
-                                        disabled={!canStopOrFinish}
+                                        disabled={!issue?.canStop}
                                         onClick={stopIssue}>
                                         Приостановить
                                     </button>
@@ -220,7 +225,7 @@ function IssueView() {
                                     <button
                                         type="button"
                                         className="btn btn-dark"
-                                        disabled={!canStopOrFinish}
+                                        disabled={!issue?.canFinish}
                                         onClick={finishIssue}>
                                         Завершить
                                     </button>
@@ -228,18 +233,19 @@ function IssueView() {
                                 <div id="childIssueList" className="list-group">
                                     <span>Подзадачи</span>
                                     {issue?.children?.map((child) => (
-                                        <button
+                                        <IssueItem
+                                            data={child}
                                             key={child.id}
-                                            type="button"
-                                            className="list-group-item list-group-item-action">
-                                            {child.title}
-                                        </button>
+                                        />
                                     ))}
                                 </div>
                                 <button
                                     type="button"
                                     className="btn btn-success"
-                                    onClick={addNewIssue}>
+                                    onClick={addNewIssue}
+                                    disabled={
+                                        issue?.status === IssueStatus.Finished
+                                    }>
                                     Добавить подзадачу
                                 </button>
                             </div>

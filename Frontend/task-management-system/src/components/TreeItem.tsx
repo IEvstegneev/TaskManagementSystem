@@ -55,6 +55,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
         if (id !== data.id) {
             dispatch(register(id));
             await IssuesService.moveIssue(id, data.id);
+            dispatch(setCurrentId(data.id))
             dispatch(unRegister(id));
         }
     };

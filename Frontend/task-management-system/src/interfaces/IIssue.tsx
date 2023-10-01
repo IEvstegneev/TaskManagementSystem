@@ -1,4 +1,4 @@
-import { ITreeItem } from "./ITreeItem";
+import { IIssueItem } from "./IIssueItem";
 import { IssueStatus } from "./IssueStatus";
 
 export interface IIssue {
@@ -11,7 +11,10 @@ export interface IIssue {
     finishedAt?: string;
     estimatedLaborCost: string;
     actualLaborCost: string;
-    children?: ITreeItem[];
+    children?: IIssueItem[];
+    canStart: boolean;
+    canStop: boolean;
+    canFinish: boolean;
 }
 
 
