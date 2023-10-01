@@ -4,8 +4,6 @@ namespace TaskManagementSystem.Core.Dto
 {
     public record IssueNodeDto
     {
-        public bool IsRoot { get; init; }
-        public bool IsLeaf { get; init; }
         public Guid Id { get; init; }
         public required string Title { get; init; }
         public required string Description { get; init; }
@@ -19,6 +17,5 @@ namespace TaskManagementSystem.Core.Dto
         public bool CanStart { get; init; }
         public bool CanStop { get; init; }
         public bool CanFinish { get; init; }
-
     }
 }

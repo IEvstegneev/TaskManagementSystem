@@ -19,8 +19,6 @@ namespace TaskManagementSystem.Core
         {
             var dto = new IssueNodeDto
             {
-                IsLeaf = issue.IsLeaf,
-                IsRoot = issue.IsRoot,
                 Id = issue.Id,
                 Title = issue.Title,
                 Description = issue.Description,

@@ -19,7 +19,7 @@ namespace TaskManagementSystem.DataAccess
         {
             var issues = await _context.IssueNodes
                 .AsNoTracking()
-                .Where(x => x.IsRoot)
+                .Where(x => x.ParentId == null)
                 .Select(x => new IssueNodeShortDto { Id = x.Id, Title = x.Title })
                 .ToArrayAsync();
 
@@ -58,13 +58,8 @@ namespace TaskManagementSystem.DataAccess
                 var parent = await _context.IssueNodes.FindAsync(parentId);
                 if (parent == null)
                     return null;
-
-                parent.IsLeaf = false;
             }
-            else
-                node.IsRoot = true;
 
-            node.IsLeaf = true;
             _context.IssueNodes.Add(node);
             await _context.SaveChangesAsync();
             return node.Id;
@@ -94,35 +89,33 @@ namespace TaskManagementSystem.DataAccess
             }
         }
 
+        public async Task MoveNodeAsync(Guid id, Guid to)
+        {
+            var node = await _context.IssueNodes.FindAsync(id);
+            if (node == null)
+            {
+                throw new NotFoundException();
+            }
+            var newParent = await _context.IssueNodes.FindAsync(to);
+            if (newParent == null)
+            {
+                throw new NotFoundException();
+            }
+            node.ParentId = to;
+            await _context.SaveChangesAsync();
+        }
 
-
-        public async Task MoveNodeAsync(Guid id, Guid? to = null)
+        public async Task MoveNodeToRootAsync(Guid id)
         {
             var node = await _context.IssueNodes.FindAsync(id);
             if (node != null)
             {
-                if (to.HasValue)
-                {
-                    var newParent = await _context.IssueNodes.FindAsync(to);
-                    if (newParent != null)
-                    {
-                        //if (node.ParentId.HasValue)
-                        //{
-                        //    var oldParent = await _context.IssueNodes.FindAsync(node.ParentId);
-                        //}
-                        node.ParentId = to;
-                        newParent.IsLeaf = false;
-                        node.IsRoot = false;
-                    }
-                    else
-                        throw new ArgumentException(); // not found
-                }
-                else
-                {
-                    node.ParentId = null;
-                    node.IsRoot = true;
-                }
+                node.ParentId = null;
                 await _context.SaveChangesAsync();
+            }
+            else
+            {
+
             }
         }
 
@@ -130,25 +123,21 @@ namespace TaskManagementSystem.DataAccess
         {
             var issue = await _context.IssueNodes
                 .FirstOrDefaultAsync(x => x.Id == id);
+
             if (issue != null)
             {
-                switch (status)
+                if (status == IssueStatus.InProgress)
+                    issue.Start();
+
+                if (status == IssueStatus.Stopped)
+                    issue.Stop();
+
+                if (status == IssueStatus.Finished)
                 {
-                    case IssueStatus.InProgress:
-                        issue.Start();
-                        break;
-                    case IssueStatus.Stopped:
-                        issue.Stop();
-                        break;
-                    case IssueStatus.Finished:
-                        {
-                            await _context.IssueNodes.LoadAsync();
-                            issue.Finish();
-                        };
-                        break;
-                    default:
-                        break;
+                    await _context.IssueNodes.LoadAsync();
+                    issue.Finish();
                 }
+
                 await _context.SaveChangesAsync();
                 return issue.Status;
             }

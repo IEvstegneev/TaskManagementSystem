@@ -122,7 +122,7 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> MoveToRootAsync([FromRoute] Guid id)
         {
-            await _issueService.MoveNodeAsync(id);
+            await _issueService.MoveNodeAsync(id, null);
             return NoContent();
         }
 
