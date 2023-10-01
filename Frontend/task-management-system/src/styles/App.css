@@ -12,11 +12,11 @@
 
 .App {
     position: relative;
-    top: 5vh;
+    top: 1vh;
     display: flex;
     flex-direction: column;
-    width: 800px;
-    height: 90vh;
+    width: 960px;
+    height: 98vh;
     text-align: center;
 }
 
@@ -67,6 +67,7 @@ main {
 .tree-container {
     display: flex;
     flex-direction: column;
+    overflow: auto;
     background-color: antiquewhite;
     min-width: 300px;
     max-width: 400px;
@@ -80,10 +81,11 @@ main {
 .content {
     display: flex;
     justify-content: left;
+    overflow: auto;
     background-color: azure;
     width: 100%;
     margin: 10px;
-    padding: 15px 20px;
+    padding: 15px 40px;
     border-radius: 5px;
     background-color: white;
     box-shadow: 0 0 10px gray;

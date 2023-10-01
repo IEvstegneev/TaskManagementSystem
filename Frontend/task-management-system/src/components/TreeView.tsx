@@ -10,7 +10,11 @@ import {
     unRegister,
 } from "../store/slices/movingSlice";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { resetCurrentId, resetParentId, selectCurrentIssueId } from "../store/slices/issueSlice";
+import {
+    resetCurrentId,
+    resetParentId,
+    selectCurrentIssueId,
+} from "../store/slices/issueSlice";
 
 function TreeView() {
     const [items, setItems] = useState<ITreeItem[]>([]);
@@ -19,15 +23,11 @@ function TreeView() {
         setItems(issues);
     });
 
-    // useEffect(() => {
-    //     fetchIssues();
-    // }, []);
-    
     const currentId = useAppSelector(selectCurrentIssueId);
     const ids = useAppSelector(movingIssuesId);
     useEffect(() => {
         fetchIssues();
-    }, [ids, currentId]);
+    }, [ids]);
 
     const dispatch = useAppDispatch();
     const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -51,7 +51,7 @@ function TreeView() {
             <h4 onDragOver={allowDrop} onDrop={dropHandler}>
                 Дерево задач
             </h4>
-            {error && <h4>Error loading</h4>}
+            {error && <h4>Error loading</h4> }
             {isLoading ? (
                 <label>
                     <h4 className="sr-only">Loading...</h4>
@@ -65,7 +65,7 @@ function TreeView() {
                         ))}
                     </ul>
                     <button className="btn btn-secondary" onClick={fetchIssues}>
-                        Retry
+                        Обновить
                     </button>
                     <button className="btn btn-primary" onClick={createIssue}>
                         Создать задачу
@@ -77,6 +77,3 @@ function TreeView() {
 }
 
 export default TreeView;
-function dispatch(arg0: any) {
-    throw new Error("Function not implemented.");
-}

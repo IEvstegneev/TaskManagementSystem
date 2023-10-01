@@ -2,7 +2,7 @@ import axios from "axios";
 import { ITreeItem } from "../interfaces/ITreeItem";
 import { ICreateIssueRequest } from "../interfaces/ICreateIssueRequest";
 import { IIssue } from "../interfaces/IIssue";
-import { IUpdateIssueRequest } from "../interfaces/IUpdateIssueRequest copy";
+import { IUpdateIssueRequest } from "../interfaces/IUpdateIssueRequest";
 import { IssueStatus } from "../interfaces/IssueStatus";
 
 export default class IssuesService {

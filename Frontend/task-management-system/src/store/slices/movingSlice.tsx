@@ -3,10 +3,12 @@ import type { RootState } from "../store";
 
 interface MovingState {
     ids: string[];
+    changedIssuesIds: string[];
 }
 
 const initialState: MovingState = {
     ids: [],
+    changedIssuesIds: []
 };
 
 export const movingSlice = createSlice({
@@ -24,11 +26,20 @@ export const movingSlice = createSlice({
                 return value != action.payload;
             });
         },
+        registerChangedIssue: (state, action: PayloadAction<string>) => {
+            state.changedIssuesIds = [...state.changedIssuesIds, action.payload];
+        },
+        unregisterChangedIssue: (state, action: PayloadAction<string>) => {
+            state.changedIssuesIds = state.changedIssuesIds.filter(function (value, index, arr) {
+                return value != action.payload;
+            });
+        },
     },
 });
 
-export const { register, unRegister } = movingSlice.actions;
+export const { register, unRegister, registerChangedIssue, unregisterChangedIssue } = movingSlice.actions;
 
 export const movingIssuesId = (state: RootState) => state.movingReducer.ids;
+export const changedIssuesId = (state: RootState) => state.movingReducer.changedIssuesIds;
 
 export default movingSlice.reducer;

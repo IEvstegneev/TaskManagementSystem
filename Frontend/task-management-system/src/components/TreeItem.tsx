@@ -6,35 +6,45 @@ import IssuesService from "../Api/IssuesService";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setCurrentId } from "../store/slices/issueSlice";
 import {
+    changedIssuesId,
     movingIssuesId,
     register,
     unRegister,
+    unregisterChangedIssue,
 } from "../store/slices/movingSlice";
 
 export function TreeItem({ data }: { data: ITreeItem }) {
     const dispatch = useAppDispatch();
     const [title, setTitle] = useState<string>(data.title);
     const [isExpanded, setExpanded] = useState(false);
+    const [canExpand, setCanExpand] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
     const [items, setItems] = useState<ITreeItem[]>([]);
     const [fetchSubItems, isLoading, error] = useFetching(async () => {
-        if (!isExpanded) {
-            var subItems = await IssuesService.getIssuesChildrenList(data.id);
-            setItems(subItems);
-        } else {
-            setItems([]);
-        }
-        setExpanded(!isExpanded);
+        var subItems = await IssuesService.getIssuesChildrenList(data.id);
+             setItems(subItems);
+             setCanExpand(subItems.length > 0);
     });
+    
+    const changedIds = useAppSelector(changedIssuesId);
+    useEffect(()=> {
+            fetchSubItems();
+        },[]);
 
-    const canExpand = () => {
-        return data.isLeaf;
-    };
+    useEffect(()=> {
+    if (changedIds.find((x) => x === data.id)){
+        fetchSubItems();
+        dispatch(unregisterChangedIssue(data.id));
+    }
+    },[changedIds]);
 
     //Drag and drop
     const ids = useAppSelector(movingIssuesId);
     useEffect(() => {
-        if (ids.find((x) => x === data.id)) setIsHidden(true);
+        if (ids.find((x) => x === data.id)){
+            setIsHidden(true);
+            dispatch(unRegister(data.id));
+        }    
     }, [ids]);
 
     const dragStartHandler = (
@@ -45,7 +55,6 @@ export function TreeItem({ data }: { data: ITreeItem }) {
     };
 
     const allowDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        //console.log(event);
         event.preventDefault();
     };
 
@@ -53,10 +62,9 @@ export function TreeItem({ data }: { data: ITreeItem }) {
         event.preventDefault();
         const id = event.dataTransfer.getData("text");
         if (id !== data.id) {
-            dispatch(register(id));
             await IssuesService.moveIssue(id, data.id);
+            dispatch(register(id));
             dispatch(setCurrentId(data.id))
-            dispatch(unRegister(id));
         }
     };
 
@@ -64,7 +72,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
         <div hidden={isHidden}>
             <li className="tree-item">
                 <div className="expander">
-                    <button hidden={canExpand()} onClick={fetchSubItems}>
+                    <button hidden={!canExpand} onClick={()=>setExpanded(!isExpanded)}>
                         V
                     </button>
                 </div>
@@ -78,7 +86,7 @@ export function TreeItem({ data }: { data: ITreeItem }) {
                     {title}
                 </div>
             </li>
-            {isExpanded ? <TreeGroup items={items}></TreeGroup> : <></>}
+            {isExpanded && <TreeGroup items={items}></TreeGroup>}
         </div>
     );
 }

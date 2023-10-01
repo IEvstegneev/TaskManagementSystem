@@ -9,7 +9,7 @@ import {
     setParentId,
 } from "../store/slices/issueSlice";
 import { IIssue } from "../interfaces/IIssue";
-import { IssueStatus } from "../interfaces/IssueStatus";
+import { IssueStatus, getDisplayStatusName } from "../interfaces/IssueStatus";
 import { IssueItem } from "./IssueItem";
 
 function IssueView() {
@@ -20,22 +20,15 @@ function IssueView() {
     const [title, setTitle] = useState<string>();
     const [performers, setPerformers] = useState<string>();
     const [description, setDescription] = useState<string>();
+    const [hours, setHours] = useState(0);
     const [status, setStatus] = useState(IssueStatus.Assigned);
-    // const [canStart, setCanStart] = useState(false);
-    // const [canStopOrFinish, setCanStopOrFinish] = useState(false);
 
     const [fetchIssue, isFetching, fetchError] = useFetching(async () => {
         const response = await IssuesService.getIssue(currentId as string);
         setIssue(response);
-        //setStatus(response.status);
         setTitle(response.title);
         setPerformers(response.performers);
         setDescription(response.description);
-        // setCanStart(
-        //     response.status === IssueStatus.Assigned ||
-        //         response.status === IssueStatus.Stopped
-        // );
-        // setCanStopOrFinish(response.status === IssueStatus.InProgress);
     });
 
     useEffect(() => {
@@ -49,15 +42,16 @@ function IssueView() {
         setPerformers(issue?.performers || "");
         setDescription(issue?.description || "");
     };
-
     const [updateIssue] = useFetching(async () => {
         if (issue)
             await IssuesService.updateIssue(issue?.id, {
                 title,
                 performers,
                 description,
+                estimatedLaborCost: hours
             });
         setIsReadMode(false);
+        fetchIssue();
     });
     const [deleteIssue] = useFetching(async () => {
         if (issue) {
@@ -65,35 +59,24 @@ function IssueView() {
             dispatch(resetCurrentId());
         }
     });
-
     const addNewIssue = () => {
         dispatch(resetCurrentId());
         dispatch(setParentId(issue?.id as string));
     };
-
     const [startIssue] = useFetching(async () => {
         if (issue) {
-            // setStatus(IssueStatus.InProgress);
-            // setCanStopOrFinish(true);
-            // setCanStart(false);
             await IssuesService.startIssue(issue.id);
             setStatus(IssueStatus.InProgress);
         }
     });
     const [stopIssue] = useFetching(async () => {
         if (issue) {
-            // setStatus(IssueStatus.Stopped);
-            // setCanStart(true);
-            // setCanStopOrFinish(false);
             await IssuesService.stopIssue(issue.id);
             setStatus(IssueStatus.Stopped);
         }
     });
     const [finishIssue] = useFetching(async () => {
         if (issue) {
-            // setStatus(IssueStatus.Finished);
-            // setCanStopOrFinish(false);
-            // setCanStart(false);
             await IssuesService.finishIssue(issue.id);
             setStatus(IssueStatus.Finished);
         }
@@ -148,6 +131,19 @@ function IssueView() {
                                     readOnly={!isEditMode}></textarea>
                             </label>
                         </div>
+                        <div className="mb-3">
+                    {isEditMode && <label>
+                        Плановая трудоёмкость задачи, час
+                        <input
+                            type="number"
+                            className="estimatedLaborCost"
+                            value={hours}
+                            onChange={(event) =>
+                                setHours(event.target.valueAsNumber)
+                            }
+                        />
+                    </label>}
+                </div>
                     </div>
 
                     <div>
@@ -186,7 +182,7 @@ function IssueView() {
                                     <h6>
                                         Статус задачи:{" "}
                                         {issue
-                                            ? IssueStatus[issue.status]
+                                            ? getDisplayStatusName(issue.status)
                                             : " - "}
                                     </h6>
                                     <h6>

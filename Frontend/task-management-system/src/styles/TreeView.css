@@ -8,7 +8,8 @@
 .tree-view > ul {
     display: flexbox;
     list-style-type: none;
-    background-color: aquamarine;
+    background-color: aliceblue;
+    border-radius: 5px;
     margin: 0;
     padding: 0;
 }
@@ -41,6 +42,11 @@
     width: 25px;
     height: 25px;
     border: none;
+}
+
+.expander button:hover {
+    font-weight: bold;
+    background-color: aqua;
 }
 
 .tree-item-title {

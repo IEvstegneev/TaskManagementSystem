@@ -1,10 +1,11 @@
 import "../styles/CreateIssueView.css";
 import "../styles/IssueForm.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import IssuesService from "../Api/IssuesService";
 import { useFetching } from "../hooks/useFetching";
 import { useAppDispatch } from "../store/hooks";
 import { setCurrentId } from "../store/slices/issueSlice";
+import { registerChangedIssue, unregisterChangedIssue } from "../store/slices/movingSlice";
 
 function CreateIssueView({ parentId }: { parentId?: string }) {
     const dispatch = useAppDispatch();
@@ -21,6 +22,9 @@ function CreateIssueView({ parentId }: { parentId?: string }) {
             description,
             estimatedLaborCost: hours
         });
+        if(parentId) 
+            dispatch(registerChangedIssue(parentId));
+        
         dispatch(setCurrentId(parentId ? parentId : id));
     });
 

@@ -52,5 +52,7 @@ span.date {
 }
 
 #childIssueList {
+    overflow: auto;
+    max-height: 240px;
     margin-top: 10px;
 }
