@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 using TaskManagementSystem.Core;
+using TaskManagementSystem.Core.Abstractions;
 using TaskManagementSystem.Core.Domain;
 using TaskManagementSystem.Core.Dto;
-using TaskManagementSystem.Core.Exceptions;
 
 namespace TaskManagementSystem.DataAccess
 {
-    public class IssuesService
+    public class IssuesService : IIssuesService
     {
         private readonly DataContext _context;
 
@@ -37,111 +38,104 @@ namespace TaskManagementSystem.DataAccess
             return children;
         }
 
-        public async Task<IssueNodeDto?> GetIssueAsync(Guid id)
+        public async Task<OperationResult<IssueNodeDto>> GetIssueAsync(Guid id)
         {
             var issue = await _context.IssueNodes
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (issue == null)
-                return null;
+                return OperationResult<IssueNodeDto>.NotFoundById(id);
 
             await _context.IssueNodes.LoadAsync();
-
-            return issue.ToIssueNodeDto();
+            var dto = issue.ToIssueNodeDto();
+            return OperationResult<IssueNodeDto>.Ok(dto);
         }
 
-        public async Task<Guid?> CreateNodeAsync(CreateIssueDto dto, Guid? parentId = null)
+        public async Task<OperationResult<Guid>> CreateNodeAsync(CreateIssueDto dto, Guid? parentId = null)
         {
             var node = dto.ToIssueNode();
             if (parentId.HasValue)
             {
                 var parent = await _context.IssueNodes.FindAsync(parentId);
-                if (parent == null)
-                    return null;
+                return OperationResult<Guid>.NotFoundById(parentId.Value);
             }
 
             _context.IssueNodes.Add(node);
             await _context.SaveChangesAsync();
-            return node.Id;
+            return OperationResult<Guid>.Ok(node.Id);
         }
 
-        public async Task<Guid?> UpdateNodeAsync(Guid id, UpdateIssueDto data)
+        public async Task<OperationResult<Guid>> UpdateNodeAsync(Guid id, UpdateIssueDto data)
         {
             var node = await _context.IssueNodes.FindAsync(id);
             if (node != null)
             {
                 node.Update(data);
                 await _context.SaveChangesAsync();
-                return node.Id;
+                return OperationResult<Guid>.Ok(node.Id);
             }
-            return null;
+            return OperationResult<Guid>.NotFoundById(id);
         }
 
 
-        public async Task DeleteNodeAsync(Guid id)
+        public async Task<OperationResult> DeleteNodeAsync(Guid id)
         {
             var node = await _context.IssueNodes.FindAsync(id);
-
             if (node != null)
             {
                 _context.IssueNodes.Remove(node);
                 await _context.SaveChangesAsync();
+                return OperationResult.Ok();
             }
+            return OperationResult.NotFoundById(id);
         }
 
-        public async Task MoveNodeAsync(Guid id, Guid to)
+        public async Task<OperationResult> MoveNodeAsync(Guid id, Guid to)
         {
             var node = await _context.IssueNodes.FindAsync(id);
             if (node == null)
-            {
-                throw new NotFoundException();
-            }
+                return OperationResult.NotFoundById(id);
+
             var newParent = await _context.IssueNodes.FindAsync(to);
             if (newParent == null)
-            {
-                throw new NotFoundException();
-            }
+                return OperationResult.NotFoundById(id);
+
             node.ParentId = to;
             await _context.SaveChangesAsync();
+            return OperationResult.Ok();
         }
 
-        public async Task MoveNodeToRootAsync(Guid id)
+        public async Task<OperationResult> MoveNodeToRootAsync(Guid id)
         {
             var node = await _context.IssueNodes.FindAsync(id);
-            if (node != null)
-            {
-                node.ParentId = null;
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
+            if (node == null)
+                return OperationResult.NotFoundById(id);
 
-            }
+            node.ParentId = null;
+            await _context.SaveChangesAsync();
+            return OperationResult.Ok();
         }
 
-        public async Task<IssueStatus?> ChangeStatusAsync(Guid id, IssueStatus status)
+        public async Task<OperationResult> ChangeStatusAsync(Guid id, IssueStatus status)
         {
-            var issue = await _context.IssueNodes
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var issue = await _context.IssueNodes.FirstOrDefaultAsync(x => x.Id == id);
+            if (issue == null)
+                return OperationResult.NotFoundById(id);
 
-            if (issue != null)
+            if (status == IssueStatus.InProgress)
+                issue.Start();
+
+            if (status == IssueStatus.Stopped)
+                issue.Stop();
+
+            if (status == IssueStatus.Finished)
             {
-                if (status == IssueStatus.InProgress)
-                    issue.Start();
-
-                if (status == IssueStatus.Stopped)
-                    issue.Stop();
-
-                if (status == IssueStatus.Finished)
-                {
-                    await _context.IssueNodes.LoadAsync();
-                    issue.Finish();
-                }
-
-                await _context.SaveChangesAsync();
-                return issue.Status;
+                await _context.IssueNodes.LoadAsync();
+                issue.Finish();
             }
-            return null;
+
+            await _context.SaveChangesAsync();
+            return OperationResult.Ok();
         }
     }
 }

@@ -1,22 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
+using TaskManagementSystem.Core;
+using TaskManagementSystem.Core.Abstractions;
 using TaskManagementSystem.Core.Domain;
 using TaskManagementSystem.Core.Dto;
-using TaskManagementSystem.Core;
 using TaskManagementSystem.DataAccess;
 
 namespace TaskManagementSystem.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [Produces(MediaTypeNames.Application.Json)]
     public class IssuesController : ControllerBase
     {
         private readonly ILogger<IssuesController> _logger;
-        private readonly IssuesService _issueService;
+        private readonly IIssuesService _issueService;
 
-        public IssuesController(ILogger<IssuesController> logger, IssuesService issueService)
+        public IssuesController(ILogger<IssuesController> logger, IIssuesService issueService)
         {
             _logger = logger;
             _issueService = issueService;
@@ -55,11 +53,11 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueNodeDto))]
         public async Task<IActionResult> GetIssueAsync([FromRoute] Guid id)
         {
-            var dto = await _issueService.GetIssueAsync(id);
-            if (dto == null)
-                return NotFound();
+            var result = await _issueService.GetIssueAsync(id);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
 
-            return Ok(dto);
+            return Ok(result.Value);
         }
 
 
@@ -76,8 +74,11 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
         public async Task<IActionResult> CreateIssueAsync([FromBody] CreateIssueDto request)
         {
-            var response = await _issueService.CreateNodeAsync(request, request.ParentId);
-            return CreatedAtRoute(new { Id = response }, response);
+            var result = await _issueService.CreateNodeAsync(request, request.ParentId);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
+
+            return CreatedAtRoute(new { Id = result.Value }, result.Value);
         }
 
         /// <summary>
@@ -92,11 +93,9 @@ namespace TaskManagementSystem.WebApi.Controllers
             [FromRoute] Guid id, 
             [FromBody] UpdateIssueDto request)
         {
-            var response = await _issueService.UpdateNodeAsync(id, request);
-            if (response == null)
-            {
-                return BadRequest();
-            }
+            var result = await _issueService.UpdateNodeAsync(id, request);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
 
             return NoContent();
         }
@@ -109,7 +108,10 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteIssueAsync([FromRoute] Guid id)
         {
-            await _issueService.DeleteNodeAsync(id);
+            var result = await _issueService.DeleteNodeAsync(id);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
+
             return NoContent();
         }
 
@@ -120,13 +122,16 @@ namespace TaskManagementSystem.WebApi.Controllers
         [HttpGet("{id:guid}/move")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> MoveIssueAsync([FromRoute] Guid id, [FromQuery] Guid to)
+        public async Task<IActionResult> MoveIssueAsync(
+            [FromRoute] Guid id, 
+            [FromQuery] Guid to)
         {
             if (id == to)
-                return BadRequest("Moving issue id and destination issue id should be different.");
+                return BadRequest(Errors.Moving.IdShouldBeDifferent);
 
-            // return operation result ?
-            await _issueService.MoveNodeAsync(id, to);
+            var result = await _issueService.MoveNodeAsync(id, to);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
 
             return NoContent();
         }
@@ -139,7 +144,10 @@ namespace TaskManagementSystem.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> MoveToRootAsync([FromRoute] Guid id)
         {
-            await _issueService.MoveNodeToRootAsync(id);
+            var result = await _issueService.MoveNodeToRootAsync(id);
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
+
             return NoContent();
         }
 
@@ -149,14 +157,16 @@ namespace TaskManagementSystem.WebApi.Controllers
         /// <param name="id">Target issue id.</param>
         /// <param name="status">The new status.</param>
         [HttpGet("{id:guid}/change-status")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IssueStatus))]
-        public async Task<IActionResult> ChangeIssueStatusAsync([FromRoute] Guid id, [FromQuery] IssueStatus status)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> ChangeIssueStatusAsync(
+            [FromRoute] Guid id, 
+            [FromQuery] IssueStatus status)
         {
             var result = await _issueService.ChangeStatusAsync(id, status);
-            if (result == null)
-                return NotFound();
+            if (result.IsFailed)
+                return BadRequest(result.ErrorMessage);
 
-            return Ok(result);
+            return NoContent();
         }
     }
 }
