@@ -36,6 +36,7 @@ namespace TaskManagementSystem.WebApi
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.SeedDatabase();
             }
 
             app.UseCors("Frontend");

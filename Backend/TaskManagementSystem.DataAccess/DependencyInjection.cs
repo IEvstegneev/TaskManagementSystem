@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Core;
 using Microsoft.Extensions.Configuration;
 using TaskManagementSystem.Core.Abstractions;
+using TaskManagementSystem.DataAccess.Data;
 
 namespace TaskManagementSystem.DataAccess
 {
@@ -28,6 +29,7 @@ namespace TaskManagementSystem.DataAccess
             else
                 services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TemporaryInMemoryDatabase"));
             services.AddScoped<IIssuesService, IssuesService>();
+            services.AddScoped<IDbInitializer, DbInitializer>();
             return services;
         }
     }

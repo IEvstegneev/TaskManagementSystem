@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 using TaskManagementSystem.Core;
 using TaskManagementSystem.Core.Abstractions;
 using TaskManagementSystem.Core.Domain;
 using TaskManagementSystem.Core.Dto;
+using TaskManagementSystem.DataAccess.Data;
 
 namespace TaskManagementSystem.DataAccess
 {
@@ -53,13 +53,14 @@ namespace TaskManagementSystem.DataAccess
 
         public async Task<OperationResult<Guid>> CreateNodeAsync(CreateIssueDto dto, Guid? parentId = null)
         {
-            var node = dto.ToIssueNode();
             if (parentId.HasValue)
             {
                 var parent = await _context.IssueNodes.FindAsync(parentId);
-                return OperationResult<Guid>.NotFoundById(parentId.Value);
+                if (parent == null)
+                    return OperationResult<Guid>.NotFoundById(parentId.Value);
             }
 
+            var node = dto.ToIssueNode();
             _context.IssueNodes.Add(node);
             await _context.SaveChangesAsync();
             return OperationResult<Guid>.Ok(node.Id);
@@ -100,7 +101,11 @@ namespace TaskManagementSystem.DataAccess
             if (newParent == null)
                 return OperationResult.NotFoundById(id);
 
-            node.ParentId = to;
+            await _context.IssueNodes.LoadAsync();
+            if (node.Contains(newParent))
+                return OperationResult.CannotMoveToDescendant();
+
+            node.ChangeParent(to);
             await _context.SaveChangesAsync();
             return OperationResult.Ok();
         }
@@ -111,7 +116,7 @@ namespace TaskManagementSystem.DataAccess
             if (node == null)
                 return OperationResult.NotFoundById(id);
 
-            node.ParentId = null;
+            node.ResetParent();
             await _context.SaveChangesAsync();
             return OperationResult.Ok();
         }

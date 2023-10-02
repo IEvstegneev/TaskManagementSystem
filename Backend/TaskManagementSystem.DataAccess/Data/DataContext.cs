@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Core.Domain;
 
-namespace TaskManagementSystem.DataAccess
+namespace TaskManagementSystem.DataAccess.Data
 {
     public class DataContext : DbContext
     {
@@ -9,7 +9,7 @@ namespace TaskManagementSystem.DataAccess
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-            Database.EnsureCreated();
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

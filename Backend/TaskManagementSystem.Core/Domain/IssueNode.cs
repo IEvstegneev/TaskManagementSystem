@@ -8,8 +8,8 @@ namespace TaskManagementSystem.Core.Domain
         private TimeSpan _actualLaborCost;
         private TimeSpan _estimatedLaborCost;
 
-        public Guid? ParentId { get; set; }
-        public ICollection<IssueNode> Children { get; set; }
+        public Guid? ParentId { get; private set; }
+        public ICollection<IssueNode> Children { get; private set; }
         public string Title { get; private set; }
         public string Description { get; private set; }
         public string Performers { get; private set; }
@@ -53,7 +53,7 @@ namespace TaskManagementSystem.Core.Domain
                 var result = Status == IssueStatus.InProgress;
                 foreach (var child in Children)
                 {
-                    result &= child.Status == IssueStatus.InProgress 
+                    result &= child.Status == IssueStatus.InProgress
                         || child.Status == IssueStatus.Finished;
                     if (!result) break;
                 }
@@ -67,6 +67,20 @@ namespace TaskManagementSystem.Core.Domain
             string performers,
             TimeSpan estimatedLaborCost,
             Guid? parentId = null)
+            : this(Guid.NewGuid(), title,
+             description,
+             performers,
+             estimatedLaborCost,
+             parentId)
+        { }
+
+        public IssueNode(
+            Guid id,
+            string title,
+            string description,
+            string performers,
+            TimeSpan estimatedLaborCost,
+            Guid? parentId = null) : base(id)
         {
             Title = title;
             Description = description;
@@ -118,7 +132,8 @@ namespace TaskManagementSystem.Core.Domain
             if (CanFinish)
             {
                 foreach (var child in Children)
-                    child.Finish();
+                    if (child.Status == IssueStatus.InProgress)
+                        child.Finish();
 
                 Status = IssueStatus.Finished;
                 _actualLaborCost += DateTime.Now - StartedAt!.Value;
@@ -126,6 +141,28 @@ namespace TaskManagementSystem.Core.Domain
             }
             else
                 throw new StopIssueException($"Cannot finish the issue. Actual Status is {Status}");
+        }
+
+        public void ChangeParent(Guid to)
+        {
+            ParentId = to;
+        }
+
+        public void ResetParent()
+        {
+            ParentId = null;
+        }
+
+        public bool Contains(IssueNode issue)
+        {
+            var result = Children.Any(x => x.Id == issue.Id);
+            foreach (var child in Children)
+            {
+                result |= child.Contains(issue);
+                if (result)
+                    return result;
+            }
+            return result;
         }
     }
 }

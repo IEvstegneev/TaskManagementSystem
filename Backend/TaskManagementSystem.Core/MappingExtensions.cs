@@ -3,7 +3,7 @@ using TaskManagementSystem.Core.Dto;
 
 namespace TaskManagementSystem.Core
 {
-    public static class MappingExtentions
+    public static class MappingExtensions
     {
         public static IssueNode ToIssueNode(this CreateIssueDto dto)
         {

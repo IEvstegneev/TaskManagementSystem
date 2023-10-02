@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TaskManagementSystem.Core.Domain;
 
-namespace TaskManagementSystem.DataAccess
+namespace TaskManagementSystem.DataAccess.Data
 {
     internal class IssueNodeConfiguration : IEntityTypeConfiguration<IssueNode>
     {

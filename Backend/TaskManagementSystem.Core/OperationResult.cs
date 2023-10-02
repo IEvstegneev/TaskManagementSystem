@@ -16,6 +16,8 @@
         public static OperationResult Failed(string message) => new(message);
         public static OperationResult NotFoundById(Guid id) 
             => new($"Issue with such Id is not found: {id}");
+        public static OperationResult CannotMoveToDescendant()
+            => new($"Cannot move issue into child issue.");
     }
 
     public class OperationResult<T> : OperationResult
