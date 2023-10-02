@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ITreeItem } from "../interfaces/ITreeItem";
 import { ICreateIssueRequest } from "../interfaces/ICreateIssueRequest";
 import { IIssue } from "../interfaces/IIssue";
@@ -73,7 +73,7 @@ export default class IssuesService {
     }
 
     static async moveIssue(id: string, toId: string) {
-        const { status } = await axios.get(
+        await axios.get(
             `https://localhost:7081/issues/${id}/move`,
             {
                 params: {
@@ -83,8 +83,7 @@ export default class IssuesService {
                     Accept: "application/json",
                 },
             }
-        );
-        return status === 204;
+        ).catch((r) => console.log((r as AxiosError).response?.data));
     }
 
     static async moveIssueToRoot(id: string) {

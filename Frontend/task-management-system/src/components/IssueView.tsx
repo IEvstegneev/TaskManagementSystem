@@ -48,7 +48,7 @@ function IssueView() {
                 title,
                 performers,
                 description,
-                estimatedLaborCost: hours
+                estimatedLaborCost: hours,
             });
         setIsReadMode(false);
         fetchIssue();
@@ -132,18 +132,20 @@ function IssueView() {
                             </label>
                         </div>
                         <div className="mb-3">
-                    {isEditMode && <label>
-                        Плановая трудоёмкость задачи, час
-                        <input
-                            type="number"
-                            className="estimatedLaborCost"
-                            value={hours}
-                            onChange={(event) =>
-                                setHours(event.target.valueAsNumber)
-                            }
-                        />
-                    </label>}
-                </div>
+                            {isEditMode && (
+                                <label>
+                                    Плановая трудоёмкость задачи, час
+                                    <input
+                                        type="number"
+                                        className="estimatedLaborCost"
+                                        value={hours}
+                                        onChange={(event) =>
+                                            setHours(event.target.valueAsNumber)
+                                        }
+                                    />
+                                </label>
+                            )}
+                        </div>
                     </div>
 
                     <div>
@@ -181,9 +183,13 @@ function IssueView() {
                                 <div className="issueStatusContainer">
                                     <h6>
                                         Статус задачи:{" "}
-                                        {issue
-                                            ? getDisplayStatusName(issue.status)
-                                            : " - "}
+                                        <strong>
+                                            {issue
+                                                ? getDisplayStatusName(
+                                                      issue.status
+                                                  )
+                                                : " - "}
+                                        </strong>
                                     </h6>
                                     <h6>
                                         Дата регистрации задачи:{" "}
